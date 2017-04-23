@@ -7,7 +7,7 @@
           <button class="btn btn-xs" @click="completeTodo(todo)" v-bind:class="[todo.completed ? 'btn-warning' : 'btn-success']">
             {{ todo.completed ? 'cancel' : 'completed' }}
           </button>
-          <button class="btn btn-danger btn-xs" @click="deleteTodo(index, todo)">remove</button>
+          <button class="btn btn-danger btn-xs" @click="deleteTodo(todo, index)">remove</button>
         </div>
       </li>
     </ul>
@@ -25,30 +25,21 @@ export default {
       }
     },
     methods:{
-        deleteTodo(index, todo) {
-            this.axios.delete('http://laravel-vue.dev/api/todo/'+todo.id).then(response => {
-                console.log(response.data);
-                this.todos.splice(index, 1);
-            });
+        deleteTodo(todo, index) {
+          this.$store.dispatch('deleteTodo', {todo, index});
         },
         completeTodo(todo) {
-            this.axios.patch('http://laravel-vue.dev/api/todo/'+todo.id+'/completed',).then(response => {
-                console.log(todo);
-                todo.completed = response.data.completed;
-                console.log(response.data);
-            });
+            this.$store.dispatch('completeTodo', todo);
         },
         fetchData(){
-            this.axios.get('http://laravel-vue.dev/api/todos').then(response => {
-                this.todos = response.data;
-            });
+            this.$store.dispatch('getTodos');
         }
 
     },
     components:{
         TodoForm
     },
-    mounted(){
+    created(){
         this.$store.dispatch('getTodos');
     }
 }

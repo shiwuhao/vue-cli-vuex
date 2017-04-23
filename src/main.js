@@ -20,12 +20,22 @@ Vue.config.productionTip = false;
 
 
 const store = new Vuex.Store({
-    status:{
-        todos:[]
+    state:{
+        todos:[],
+        newTodo:{id:null, title:'', completed:0}
     },
     mutations:{
-        get_todo_list(status, todos){
-            status.todos = todos;
+        get_todo_list(state, todos){
+            state.todos = todos;
+        },
+        complete_todo(state, todo) {
+            todo.completed = !todo.completed;
+        },
+        delete_todo(state, index){
+            state.todos.splice(index, 1);
+        },
+        add_todo(state, todo){
+            state.todos.push(todo);
         }
     },
     actions:{
@@ -33,6 +43,22 @@ const store = new Vuex.Store({
             Vue.axios.get('http://laravel-vue.dev/api/todos').then(response => {
                store.commit('get_todo_list', response.data);
             });
+        },
+        completeTodo(store, todo){
+            Vue.axios.patch('http://laravel-vue.dev/api/todo/'+todo.id+'/completed',).then(response => {
+                store.commit('complete_todo', todo);
+            });
+        },
+        deleteTodo(store, obj){
+            Vue.axios.delete('http://laravel-vue.dev/api/todo/'+obj.todo.id).then(response => {
+                store.commit('delete_todo', obj.index);
+            });
+        },
+        addTodo(store, todo) {
+            Vue.axios.post('http://laravel-vue.dev/api/todo/create', todo).then(response => {
+                store.commit('add_todo', response.data);
+            });
+            store.state.newTodo = {id:null, body:'', completed:false};
         }
     }
 });
@@ -49,10 +75,10 @@ const router = new VueRouter({
 });
 
 /* eslint-disable no-new */
-const app = new Vue({
+new Vue({
     el: '#app',
-    template: '<App/>',
-    components: { App },
     router,
     store,
+    template: '<App/>',
+    components: { App },
 });
